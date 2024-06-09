@@ -7,7 +7,9 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
+import java.util.Date;
+import java.util.TimerTask;
+import java.util.Timer;
 
 
 public class Main {
@@ -15,11 +17,46 @@ public class Main {
     JFrame frame;
     int batteryLevel = 0;
     TrayIcon trayIcon = null;//new TrayIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource("ico.png")));
+    //JLabel batteryStatusLabel = new JLabel("status...");
+
+    private JLabel batteryStatusLabel;
+    private JLabel totalCapacityLabel;
+    private JLabel originalCapacityLabel;
+    private JLabel currentCapacityLabel;
+    private JLabel manufacturerLabel;
 
     public Main() {
+        setLayout();
+        trayIcon();
+        setTimer();
+    }
+
+    private void setLayout(){
         frame = new JFrame("Battery Level");
         frame.setSize(400, 400);
-        trayIcon();
+        //JLabel lBatteryLabel = new JLabel("Battery level:");
+        // Nastavení layoutu
+        frame.setLayout(new GridLayout(5, 2)); // Použijeme GridLayout s 5 řádky a 2 sloupci
+
+        // Inicializace proměnných
+        batteryStatusLabel = new JLabel("unknown %");
+        totalCapacityLabel = new JLabel("unknown mAh");
+        originalCapacityLabel = new JLabel("unknown mAh");
+        currentCapacityLabel = new JLabel("unknown mAh");
+        manufacturerLabel = new JLabel("unknown");
+
+        // Přidání proměnných do JFrame
+        frame.add(new JLabel("Stav baterie:"));
+        frame.add(batteryStatusLabel);
+        frame.add(new JLabel("Celková kapacita:"));
+        frame.add(totalCapacityLabel);
+        frame.add(new JLabel("Původní kapacita:"));
+        frame.add(originalCapacityLabel);
+        frame.add(new JLabel("Aktuální kapacita:"));
+        frame.add(currentCapacityLabel);
+        frame.add(new JLabel("Výrobce:"));
+        frame.add(manufacturerLabel);
+
     }
 
     private void trayIcon() {
@@ -78,6 +115,7 @@ public class Main {
                 String line;
                 if ((line = reader.readLine()) != null) {
                     String status = "Stav baterie: " + line.trim() + " %";
+                    System.out.println(status);
                     trayIcon.setToolTip(status);
                     trayIcon.displayMessage("Aktualizace stavu baterie", status, TrayIcon.MessageType.INFO);
                 } else {
@@ -88,5 +126,20 @@ public class Main {
             trayIcon.setToolTip("Chyba při získávání informací o baterii: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private void setTimer() {
+        TimerTask task = new TimerTask() {
+            public void run() {
+                System.out.println("Task performed on: " + new Date() + "n" +
+                        "Thread's name: " + Thread.currentThread().getName());
+                readBatteryInfo();
+            }
+        };
+        Timer timer = new Timer("Timer");
+
+        long delay = 1000L;
+        long period = 1000L;//300000L;
+        timer.scheduleAtFixedRate(task, delay, period);
     }
 }
