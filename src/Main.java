@@ -11,32 +11,34 @@ import java.util.Date;
 import java.util.TimerTask;
 import java.util.Timer;
 
-
 public class Main {
 
-    JFrame frame;
-    int batteryLevel = 0;
-    TrayIcon trayIcon = null;//new TrayIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource("ico.png")));
-    //JLabel batteryStatusLabel = new JLabel("status...");
-
+    private JFrame frame;
+    private int batteryLevel = 0;
+    private TrayIcon trayIcon = null;
     private JLabel batteryStatusLabel;
     private JLabel totalCapacityLabel;
     private JLabel originalCapacityLabel;
     private JLabel currentCapacityLabel;
     private JLabel manufacturerLabel;
 
+    private static final long DELAY = 1000L;
+    private static final long PERIOD = 1000L;
+
     public Main() {
         setLayout();
-        trayIcon();
+        setupTrayIcon();
         setTimer();
     }
 
-    private void setLayout(){
+    public static void main(String[] args) {
+        new Main();
+    }
+
+    private void setLayout() {
         frame = new JFrame("Battery Level");
         frame.setSize(400, 400);
-        //JLabel lBatteryLabel = new JLabel("Battery level:");
-        // Nastavení layoutu
-        frame.setLayout(new GridLayout(5, 2)); // Použijeme GridLayout s 5 řádky a 2 sloupci
+        frame.setLayout(new GridLayout(5, 2)); // 5 řádků a 2 sloupce
 
         // Inicializace proměnných
         batteryStatusLabel = new JLabel("unknown %");
@@ -45,7 +47,7 @@ public class Main {
         currentCapacityLabel = new JLabel("unknown mAh");
         manufacturerLabel = new JLabel("unknown");
 
-        // Přidání proměnných do JFrame
+        // Přidání komponent do JFrame
         frame.add(new JLabel("Stav baterie:"));
         frame.add(batteryStatusLabel);
         frame.add(new JLabel("Celková kapacita:"));
@@ -57,63 +59,54 @@ public class Main {
         frame.add(new JLabel("Výrobce:"));
         frame.add(manufacturerLabel);
 
+        //frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        //frame.setVisible(true);
     }
 
-    private void trayIcon() {
-        if(SystemTray.isSupported() == true){
+    private void setupTrayIcon() {
+        if (SystemTray.isSupported()) {
             frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-        }
-        SystemTray systemTray = SystemTray.getSystemTray();
-        BufferedImage image = null;
-        try {
-            image = ImageIO.read(Main.class.getResource("/ico.png"));
-        } catch (IOException e){
-            e.printStackTrace();
-        }
-        trayIcon = new TrayIcon(image, "Demo");
-        trayIcon.setImageAutoSize(true);
-        PopupMenu popupMenu = new PopupMenu();
-        MenuItem show = new MenuItem("Show");
-        show.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                frame.setVisible(true);
+            SystemTray systemTray = SystemTray.getSystemTray();
+            BufferedImage image = null;
+            try {
+                image = ImageIO.read(Main.class.getResource("/ico.png"));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        });
-        MenuItem exit = new MenuItem("Exit");
-        exit.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
-            }
-        });
 
-        popupMenu.add(show);
-        popupMenu.add(exit);
-        trayIcon.setPopupMenu(popupMenu);
-        try {
-            systemTray.add(trayIcon);
-        } catch (AWTException e) {
-            e.printStackTrace();
+            trayIcon = new TrayIcon(image, "Demo");
+            trayIcon.setImageAutoSize(true);
+
+            PopupMenu popupMenu = new PopupMenu();
+            MenuItem showItem = new MenuItem("Show");
+            showItem.addActionListener(e -> frame.setVisible(true));
+
+            MenuItem exitItem = new MenuItem("Exit");
+            exitItem.addActionListener(e -> System.exit(0));
+
+            popupMenu.add(showItem);
+            popupMenu.add(exitItem);
+            trayIcon.setPopupMenu(popupMenu);
+
+            try {
+                systemTray.add(trayIcon);
+            } catch (AWTException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    public static void main(String[] args) {
-        new Main();
-    }
 
-    public void  readBatteryInfo(){
-        // Získání stavu baterie pomocí PowerShell skriptu
+    public void readBatteryInfo() {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder("powershell.exe",
                     "(Get-WmiObject -Query 'Select * from Win32_Battery').EstimatedChargeRemaining");
             Process process = processBuilder.start();
             process.waitFor();
 
-            // Čtení výstupu PowerShell skriptu
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                String line;
-                if ((line = reader.readLine()) != null) {
+                String line = reader.readLine();
+                if (line != null) {
                     String status = "Stav baterie: " + line.trim() + " %";
                     System.out.println(status);
                     trayIcon.setToolTip(status);
@@ -137,9 +130,6 @@ public class Main {
             }
         };
         Timer timer = new Timer("Timer");
-
-        long delay = 1000L;
-        long period = 1000L;//300000L;
-        timer.scheduleAtFixedRate(task, delay, period);
+        timer.scheduleAtFixedRate(task, DELAY, PERIOD);
     }
 }
