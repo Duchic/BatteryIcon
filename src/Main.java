@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.TimerTask;
 import java.util.Timer;
+import java.lang.NumberFormatException;
 
 public class Main {
 
@@ -22,13 +23,24 @@ public class Main {
     private JLabel currentCapacityLabel;
     private JLabel manufacturerLabel;
 
+    BufferedImage image = null;
+
     private static final long DELAY = 1000L;
-    private static final long PERIOD = 1000L;
+    private static final long PERIOD = 100000L;
 
     public Main() {
         setLayout();
+        try {
+            image = ImageIO.read(Main.class.getResource("/"+batteryLevel+".png"));
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        trayIcon = new TrayIcon(image, "Demo");
+        trayIcon.setImageAutoSize(true);
+        //readBatteryInfo();
         setupTrayIcon();
         setTimer();
+
     }
 
     public static void main(String[] args) {
@@ -67,15 +79,16 @@ public class Main {
         if (SystemTray.isSupported()) {
             frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
             SystemTray systemTray = SystemTray.getSystemTray();
-            BufferedImage image = null;
+            //BufferedImage image = null;
             try {
-                image = ImageIO.read(Main.class.getResource("/ico.png"));
+                image = ImageIO.read(Main.class.getResource("/"+batteryLevel+".png"));
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            trayIcon = new TrayIcon(image, "Demo");
-            trayIcon.setImageAutoSize(true);
+            //trayIcon = new TrayIcon(image, "Demo");
+            //trayIcon.setImageAutoSize(true);
+            trayIcon.setImage(image);
 
             PopupMenu popupMenu = new PopupMenu();
             MenuItem showItem = new MenuItem("Show");
@@ -89,6 +102,7 @@ public class Main {
             trayIcon.setPopupMenu(popupMenu);
 
             try {
+                systemTray.remove(trayIcon);
                 systemTray.add(trayIcon);
             } catch (AWTException e) {
                 e.printStackTrace();
@@ -107,10 +121,12 @@ public class Main {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 String line = reader.readLine();
                 if (line != null) {
+                    batteryLevel = Integer.valueOf(line.trim());
                     String status = "Stav baterie: " + line.trim() + " %";
                     System.out.println(status);
                     trayIcon.setToolTip(status);
-                    trayIcon.displayMessage("Aktualizace stavu baterie", status, TrayIcon.MessageType.INFO);
+                    setupTrayIcon();
+                    //trayIcon.displayMessage("Aktualizace stavu baterie", status, TrayIcon.MessageType.INFO);
                 } else {
                     trayIcon.setToolTip("Není dostupná žádná baterie.");
                 }
