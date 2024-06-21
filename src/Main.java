@@ -127,6 +127,7 @@ public class Main {
                     trayIcon.setToolTip(status);
                     setupTrayIcon();
                     //trayIcon.displayMessage("Aktualizace stavu baterie", status, TrayIcon.MessageType.INFO);
+                    updateFrameValues();
                 } else {
                     trayIcon.setToolTip("Není dostupná žádná baterie.");
                 }
@@ -135,6 +136,10 @@ public class Main {
             trayIcon.setToolTip("Chyba při získávání informací o baterii: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private void updateFrameValues(){
+        batteryStatusLabel.setText(batteryLevel + "%");
     }
 
     private void setTimer() {
