@@ -113,15 +113,21 @@ public class Main {
 
     public void readBatteryInfo() {
         try {
-            ProcessBuilder processBuilder = new ProcessBuilder("powershell.exe",
+            ProcessBuilder batteryLevel = new ProcessBuilder("powershell.exe",
                     "(Get-WmiObject -Query 'Select * from Win32_Battery').EstimatedChargeRemaining");
-            Process process = processBuilder.start();
+            ProcessBuilder batteryRunTime = new ProcessBuilder("powershell.exe",
+                    "(Get-WmiObject -Query 'Select * from Win32_Battery').EstimatedRunTime");
+            ProcessBuilder batteryStatus = new ProcessBuilder("powershell.exe",
+                    "(Get-WmiObject -Query 'Select * from Win32_Battery').BatteryStatus");
+            ProcessBuilder batteryChemistry = new ProcessBuilder("powershell.exe",
+                    "(Get-WmiObject -Query 'Select * from Win32_Battery').Chemistry");
+            Process process = batteryLevel.start();
             process.waitFor();
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 String line = reader.readLine();
                 if (line != null) {
-                    batteryLevel = Integer.valueOf(line.trim());
+                    this.batteryLevel = Integer.valueOf(line.trim());
                     String status = "Stav baterie: " + line.trim() + " %";
                     System.out.println(status);
                     trayIcon.setToolTip(status);
