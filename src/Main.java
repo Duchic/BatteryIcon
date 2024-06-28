@@ -22,9 +22,9 @@ public class Main {
     private String batteryRunTime;
     private TrayIcon trayIcon = null;
     private JLabel batteryLevelLabel;
-    private JLabel totalStatusLabel;
-    private JLabel originalRunTimeLabel;
-    private JLabel currentChemistryLabel;
+    private JLabel batteryStatusLabel;
+    private JLabel batteryRunTimeLabel;
+    private JLabel batteryChemistryLabel;
     private JLabel manufacturerLabel;
 
     BufferedImage image = null;
@@ -59,20 +59,20 @@ public class Main {
 
         // Inicializace proměnných
         batteryLevelLabel = new JLabel("unknown %");
-        totalStatusLabel = new JLabel("unknown mAh");
-        originalRunTimeLabel = new JLabel("unknown mAh");
-        currentChemistryLabel = new JLabel("unknown mAh");
+        batteryStatusLabel = new JLabel("unknown mAh");
+        batteryRunTimeLabel = new JLabel("unknown mAh");
+        batteryChemistryLabel = new JLabel("unknown mAh");
         manufacturerLabel = new JLabel("unknown");
 
         // Přidání komponent do JFrame
         frame.add(new JLabel("Úroveň baterie:"));
         frame.add(batteryLevelLabel);
         frame.add(new JLabel("Status baterie:"));
-        frame.add(totalStatusLabel);
-        frame.add(new JLabel("Čas na baterii:"));
-        frame.add(originalRunTimeLabel);
+        frame.add(batteryStatusLabel);
+        frame.add(new JLabel("Zbývající čas na baterii:"));
+        frame.add(batteryRunTimeLabel);
         frame.add(new JLabel("Složení baterie:"));
-        frame.add(currentChemistryLabel);
+        frame.add(batteryChemistryLabel);
         frame.add(new JLabel("Výrobce:"));
         frame.add(manufacturerLabel);
 
@@ -226,8 +226,60 @@ public class Main {
 
     private void updateFrameValues(){
         batteryLevelLabel.setText(batteryLevel + "%");
-        batte
+        batteryStatusLabel.setText((getBatteryStatus("(Get-WmiObject -Query 'Select * from Win32_Battery').BatteryStatus")));
+        batteryRunTimeLabel.setText(formatTime(Integer.valueOf(batteryRunTime)));
+        batteryChemistryLabel.setText(getBatteryChemistry("(Get-WmiObject -Query 'Select * from Win32_Battery').Chemistry"));
 
+    }
+
+    private String getBatteryStatus(String command) {
+        Integer status = executePowerShellCommandAsInteger(command);
+        if (status != null) {
+            switch (status) {
+                case 1: return "Discharging";
+                case 2: return "AC Power";
+                case 3: return "Fully Charged";
+                case 4: return "Low";
+                case 5: return "Critical";
+                case 6: return "Charging";
+                case 7: return "Charging and High";
+                case 8: return "Charging and Low";
+                case 9: return "Charging and Critical";
+                case 10: return "Undefined";
+                case 11: return "Partially Charged";
+                default: return "Unknown Status";
+            }
+        }
+        return "Unknown Status";
+    }
+
+    private String getBatteryChemistry(String command) {
+        Integer chemistry = executePowerShellCommandAsInteger(command);
+        if (chemistry != null) {
+            switch (chemistry) {
+                case 1: return "Jiný";
+                case 2: return "Unknown";
+                case 3: return "Olověný akumulátor";
+                case 4: return "NiCd";
+                case 5: return "NiMH";
+                case 6: return "Li-ion";
+                case 7: return "Zinkový vzduchový";
+                case 8: return "Li-Polymer";
+                default: return "Unknown Chemistry";
+            }
+        }
+        return "Unknown Chemistry";
+    }
+
+
+    private String formatTime(int minutes) {
+        int hours = minutes / 60;
+        int remainingMinutes = minutes % 60;
+        if (hours > 0) {
+            return String.format("%d hodin %d minut", hours, remainingMinutes);
+        } else {
+            return String.format("%d minut", remainingMinutes);
+        }
     }
 
     private void setTimer() {
