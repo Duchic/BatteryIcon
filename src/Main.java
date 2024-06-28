@@ -26,6 +26,7 @@ public class Main {
     private JLabel batteryRunTimeLabel;
     private JLabel batteryChemistryLabel;
     private JLabel manufacturerLabel;
+    private boolean lowBatteryAlertShown = false;
 
     BufferedImage image = null;
 
@@ -144,6 +145,7 @@ public class Main {
             //updateTrayIconAndFrame();
             updateFrameValues();
             setupTrayIcon();
+            checkLowBatteryAlert();
         } catch (Exception e) {
             trayIcon.setToolTip("Chyba při získávání informací o baterii: " + e.getMessage());
             e.printStackTrace();
@@ -279,6 +281,17 @@ public class Main {
             return String.format("%d hodin %d minut", hours, remainingMinutes);
         } else {
             return String.format("%d minut", remainingMinutes);
+        }
+    }
+
+    private void checkLowBatteryAlert() {
+        if (batteryLevel != 0) {
+            if (batteryLevel < 30 && !lowBatteryAlertShown) {
+                trayIcon.displayMessage("Upozornění", "Úroveň baterie je nízká (" + batteryLevel + "%).", TrayIcon.MessageType.WARNING);
+                lowBatteryAlertShown = true;
+            } else if (batteryLevel >= 30) {
+                lowBatteryAlertShown = false;
+            }
         }
     }
 
