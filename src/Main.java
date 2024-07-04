@@ -56,7 +56,7 @@ public class Main {
     private void setLayout() {
         frame = new JFrame("Battery Level");
         frame.setSize(400, 400);
-        frame.setLayout(new GridLayout(5, 2)); // 5 řádků a 2 sloupce
+        frame.setLayout(new GridLayout(6, 2)); // 5 řádků a 2 sloupce
 
         // Inicializace proměnných
         batteryLevelLabel = new JLabel("unknown %");
@@ -64,8 +64,19 @@ public class Main {
         batteryRunTimeLabel = new JLabel("unknown mAh");
         batteryChemistryLabel = new JLabel("unknown mAh");
         manufacturerLabel = new JLabel("unknown");
+        Font bigFont = new Font("Serif", Font.BOLD, 18);
+
+        // Načtení ikony z resources
+        ImageIcon icon = new ImageIcon(Main.class.getResource("/icon.png"));
+
+        // Vytvoření JLabel s ikonou
+        JLabel nameLabel = new JLabel("BatteryLevel");
+        nameLabel.setFont(bigFont);
+        JLabel batteryIcon = new JLabel(icon);
 
         // Přidání komponent do JFrame
+        frame.add(batteryIcon);
+        frame.add(nameLabel);
         frame.add(new JLabel("Úroveň baterie:"));
         frame.add(batteryLevelLabel);
         frame.add(new JLabel("Status baterie:"));
@@ -98,7 +109,10 @@ public class Main {
 
             PopupMenu popupMenu = new PopupMenu();
             MenuItem showItem = new MenuItem("Show");
-            showItem.addActionListener(e -> frame.setVisible(true));
+            showItem.addActionListener(e -> {
+                frame.setVisible(true);
+                frame.setLocationRelativeTo(null);
+            });
 
             MenuItem exitItem = new MenuItem("Exit");
             exitItem.addActionListener(e -> System.exit(0));
