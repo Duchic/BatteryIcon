@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="BatteryIcon:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/BatteryIcon_jar</output-path>
+    <root id="archive" name="BatteryIcon.jar">
+      <element id="module-output" name="BatteryIcon" />
+    </root>
+  </artifact>
+</component>
